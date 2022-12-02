@@ -18,12 +18,15 @@ import java.io.IOException;
 
 public class SupplyChain extends Application {
 
-    private static final int height = 600,width = 700,upperLine=50;
+    public static final int height = 600,width = 700,upperLine=50;
 
     Pane bodyPane = new Pane();//another control space for body of the homepage
 
     public Login login = new Login();//object of Login class
+    Button orderButton;
     ProductDetails productDetails = new ProductDetails();
+    boolean loggedIn = false;
+    Label loginLabel;
 
     private GridPane headerBar(){
        GridPane gridPane = new GridPane();
@@ -35,18 +38,76 @@ public class SupplyChain extends Application {
        searchText.setMinWidth(250);
        searchText.setPromptText("Please search here");
 
+          loginLabel = new Label("Please login!");
+       Button loginButton = new Button("Login");
+
+       loginButton.setOnAction(new EventHandler<ActionEvent>() {
+           @Override
+           public void handle(ActionEvent actionEvent) {
+               if(loggedIn==false) {
+                   bodyPane.getChildren().clear();
+                   bodyPane.getChildren().add(loginPage());
+                  // loggedIn = true;
+               }
+           }
+       });
+
        Button searchButton = new Button("Search");
        searchButton.setOnAction(new EventHandler<ActionEvent>() {
            @Override
            public void handle(ActionEvent actionEvent) {
-               productDetails.getAllProducts();
+             //  productDetails.getAllProducts();
                bodyPane.getChildren().clear();
-               bodyPane.getChildren().add(productDetails.getAllProducts());
+             //  bodyPane.getChildren().add(productDetails.getAllProducts());
+               String search = searchText.getText();
+               bodyPane.getChildren().add(productDetails.getProductsByName(search));
            }
        });
        gridPane.add(searchText,0,0);
        gridPane.add(searchButton,1,0);
+       gridPane.add(loginLabel,2,0);
+       gridPane.add(loginButton,3,0);
+     //  gridPane.getChildren().remove(3,0);
+
+
+
        return gridPane;
+    }
+    private GridPane footBar(){
+        GridPane gridPane = new GridPane();
+        orderButton = new Button("Buy Now");
+
+        orderButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                productDetails.getSelectedProduct();
+                if(loggedIn==false){
+                    bodyPane.getChildren().clear();
+                    bodyPane.getChildren().add(loginPage());
+                }
+                else {
+                    Product product = productDetails.getSelectedProduct();
+                            if(product!=null){
+                                String email =loginLabel.getText();
+                                email=email.substring(10);
+                                System.out.println(email);
+                                if(Order. placeSinglerOrder(product,email)){
+                                    System.out.println("Order placed");
+                                }
+                                else {
+                                    System.out.println("Order Failed");
+                                }
+                            }
+                            else {
+                                System.out.println("Please select a product");
+                            }
+                }
+            }
+        });
+        gridPane.add(orderButton,0,0);
+        gridPane.setMinWidth(width);
+        gridPane.setTranslateY(height+80);
+        return gridPane;
     }
        private GridPane loginPage(){
            Label emailLabel = new Label("Email");
@@ -65,8 +126,13 @@ public class SupplyChain extends Application {
                    String email = emailTextfield.getText();
                    String password = passwordField.getText();
                    if(login.customerLogin(email,password)){
-                       messageLabel.setText("Login Success");
-                       messageLabel.setTextFill(Color.GREEN);
+                       loginLabel.setText("Welcome :"+email);
+                       bodyPane.getChildren().clear();
+                       bodyPane.getChildren().add(productDetails.getAllProducts());
+                       loggedIn=true;
+
+                     //  messageLabel.setText("Login Success");
+                     //  messageLabel.setTextFill(Color.GREEN);
                    }
                    else {
                        messageLabel.setText("Invalid User");
@@ -78,7 +144,7 @@ public class SupplyChain extends Application {
            //gridpane is also a type of control space in which controls can be put on grids by rows and columns like(0,5)
            GridPane gridPane = new GridPane();
            gridPane.setMinSize(bodyPane.getMinWidth(),bodyPane.getMinHeight());
-           gridPane.setAlignment(Pos.CENTER);
+        //   gridPane.setAlignment(Pos.CENTER);
 
           // gridPane.setStyle("-fx-background-color:#C0C0C0;");
 
@@ -103,11 +169,12 @@ public class SupplyChain extends Application {
 
       //  bodyPane.setStyle("-fx-background-color:#C0C9C0;");
 
-        bodyPane.getChildren().addAll(loginPage());
+        bodyPane.getChildren().addAll(productDetails.getAllProducts());
 
         root.getChildren().addAll(
                 headerBar(),
-                bodyPane);
+                bodyPane,
+                footBar());
         return root;
     }
     @Override

@@ -33,6 +33,16 @@ public class DataBaseConnection {
         }
             return null;
         }
+        public int insertData(String query){
+        Statement statement =getStatement();
+        try {
+            return statement.executeUpdate(query);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+        }
 
 
 //    public static void main(String[] args) {

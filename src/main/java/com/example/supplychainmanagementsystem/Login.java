@@ -29,7 +29,8 @@ public class Login {
 
     public boolean customerLogin(String email, String password) {
         try {
-            String query = String.format("SELECT * FROM customer WHERE email ='%s' and password = '%s'", email, password);
+            String query = String.format("SELECT * FROM customer WHERE email ='%s' and password = '%s'",
+                    email, getEncryptedPassword(password));
             ResultSet rs = dbConn.getQueryTable(query);
             if (rs == null) return false;
             if (rs.next()) {
